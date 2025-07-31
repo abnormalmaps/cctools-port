@@ -124,6 +124,13 @@ target_compile_options(
         -Wno-shift-negative-value
 )
 
+if(WIN32)
+    target_link_libraries(ld ws2_32 -ldl)
+    target_link_options(ld PRIVATE -static-libgcc -static-libstdc++ -static)
+else()
+    target_link_libraries(ld -lpthread -ldl)
+endif()
+
 if(COMPILER_SUPPORTS_FBLOCKS)
     target_compile_options(ld PRIVATE -fblocks)
     if(BLOCKS_RUNTIME_LIB)
@@ -146,13 +153,6 @@ if(COMPILER_SUPPORTS_FBLOCKS)
     endif()
 else()
     message(STATUS "Blocks support disabled")
-endif()
-
-if(WIN32)
-    target_link_libraries(ld ws2_32 -ldl)
-    target_link_options(ld PRIVATE -static-libgcc -static-libstdc++ -static)
-else()
-    target_link_libraries(ld -lpthread -ldl)
 endif()
 
 install(TARGETS ld RUNTIME DESTINATION bin)

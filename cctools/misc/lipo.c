@@ -2525,7 +2525,9 @@ new_segalign(void)
 }
 
 /*
- * Function for qsort for comparing thin file's alignment
+ * Function for qsort for comparing thin file's alignment.
+ * Uses secondary sort keys (cputype, cpusubtype) to ensure
+ * stable ordering when alignment values are equal.
  */
 static
 int
@@ -2533,7 +2535,18 @@ cmp_qsort(
 const struct thin_file *thin1,
 const struct thin_file *thin2)
 {
-	return(thin1->fat_arch.align - thin2->fat_arch.align);
+	int align_diff = thin1->fat_arch.align - thin2->fat_arch.align;
+	if (align_diff != 0) {
+		return align_diff;
+	}
+
+	int cputype_diff = thin1->fat_arch.cputype - thin2->fat_arch.cputype;
+    if (cputype_diff != 0) {
+		return cputype_diff;
+	}
+    
+    return (thin1->fat_arch.cpusubtype & ~CPU_SUBTYPE_MASK) - 
+           (thin2->fat_arch.cpusubtype & ~CPU_SUBTYPE_MASK);
 }
 
 /*
